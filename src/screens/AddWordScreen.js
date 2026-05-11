@@ -4,11 +4,14 @@ import {
   KeyboardAvoidingView, Platform, ScrollView, StatusBar, Animated, Alert,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { COLORS, SIZES, FONTS } from '../constants/theme';
 import { addWord, getTotalWordsCount, getAllWords } from '../database/db';
+import { exportData } from '../utils/exportService';
 
 const AddWordScreen = ({ navigation }) => {
+  const insets = useSafeAreaInsets();
   const [word, setWord] = useState('');
   const [translation, setTranslation] = useState('');
   const [error, setError] = useState('');
@@ -50,45 +53,49 @@ const AddWordScreen = ({ navigation }) => {
     }
   };
 
-  const exportCSV = async () => {
+  const handleExport = async () => {
     try {
       const allWords = await getAllWords('word', 'ASC');
       if (allWords.length === 0) {
         Alert.alert('Export impossible', 'Aucun mot à exporter.');
         return;
       }
-      const header = 'Mot|Traduction';
-      const rows = allWords.map(w => `${w.word}|${w.translation}`);
-      const csv = [header, ...rows].join('\n');
 
-      if (Platform.OS === 'web') {
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = 'vocabulaire.csv';
-        link.click();
-        URL.revokeObjectURL(url);
-      } else {
-        const FileSystem = require('expo-file-system');
-        const Sharing = require('expo-sharing');
-        const fileUri = FileSystem.documentDirectory + 'vocabulaire.csv';
-        await FileSystem.writeAsStringAsync(fileUri, csv, {
-          encoding: FileSystem.EncodingType.UTF8,
-        });
-        const canShare = await Sharing.isAvailableAsync();
-        if (canShare) {
-          await Sharing.shareAsync(fileUri, {
-            mimeType: 'text/csv',
-            dialogTitle: 'Exporter le vocabulaire',
-          });
-        } else {
-          Alert.alert('Exporté', 'Fichier sauvegardé : ' + fileUri);
-        }
-      }
+      Alert.alert(
+        'Exporter le vocabulaire',
+        'Choisissez le format d\'exportation :',
+        [
+          {
+            text: 'Format CSV (Excel)',
+            onPress: () => performExport(allWords, 'csv'),
+          },
+          {
+            text: 'Format JSON',
+            onPress: () => performExport(allWords, 'json'),
+          },
+          {
+            text: 'Format Texte (Simple)',
+            onPress: () => performExport(allWords, 'txt'),
+          },
+          {
+            text: 'Annuler',
+            style: 'cancel',
+          },
+        ],
+        { cancelable: true }
+      );
     } catch (err) {
       console.error(err);
-      Alert.alert('Erreur', "Impossible d'exporter les mots.");
+      Alert.alert('Erreur', "Impossible de préparer l'exportation.");
+    }
+  };
+
+  const performExport = async (words, format) => {
+    try {
+      await exportData(words, format);
+    } catch (err) {
+      console.error(err);
+      Alert.alert('Erreur', "L'exportation a échoué. " + (err.message || ""));
     }
   };
 
@@ -97,10 +104,10 @@ const AddWordScreen = ({ navigation }) => {
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
 
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
         <Text style={styles.headerTitle}>Ajouter un mot</Text>
         <View style={styles.headerActions}>
-          <TouchableOpacity onPress={exportCSV} style={styles.exportBtn}>
+          <TouchableOpacity onPress={handleExport} style={styles.exportBtn}>
             <MaterialIcons name="file-download" size={22} color={COLORS.primary} />
           </TouchableOpacity>
           <View style={styles.badge}>
@@ -224,7 +231,7 @@ const AddWordScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
   flex: { flex: 1 },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 50, paddingBottom: 12 },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 12 },
   headerTitle: { fontSize: 24, color: COLORS.textPrimary, ...FONTS.bold },
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   exportBtn: { padding: 4 },

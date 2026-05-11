@@ -4,6 +4,7 @@ import {
   TextInput, KeyboardAvoidingView, Platform, ScrollView,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { COLORS, SIZES, FONTS, LEVEL_CONFIG } from '../constants/theme';
 import { getWordsForQuiz, incrementStreak, resetStreak, getTotalWordsCount, getLevel } from '../database/db';
@@ -11,6 +12,7 @@ import { getWordsForQuiz, incrementStreak, resetStreak, getTotalWordsCount, getL
 const normalize = (str) => str.trim().toLowerCase().replace(/\s+/g, ' ');
 
 const QuizScreen = ({ navigation }) => {
+  const insets = useSafeAreaInsets();
   const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answer, setAnswer] = useState('');
@@ -88,7 +90,7 @@ const QuizScreen = ({ navigation }) => {
     return (
       <View style={s.container}>
         <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
-        <View style={s.header}><Text style={s.headerTitle}>S'exercer</Text></View>
+        <View style={[s.header, { paddingTop: insets.top + 10 }]}><Text style={s.headerTitle}>S'exercer</Text></View>
         <View style={s.centered}>
           <View style={s.emptyIcon}>
             <MaterialIcons name="school" size={56} color={COLORS.border} />
@@ -109,7 +111,7 @@ const QuizScreen = ({ navigation }) => {
     return (
       <View style={s.container}>
         <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
-        <View style={s.header}><Text style={s.headerTitle}>S'exercer</Text></View>
+        <View style={[s.header, { paddingTop: insets.top + 10 }]}><Text style={s.headerTitle}>S'exercer</Text></View>
         <View style={s.centered}>
           <View style={s.startCircle}>
             <MaterialIcons name="psychology" size={60} color={COLORS.primary} />
@@ -129,7 +131,7 @@ const QuizScreen = ({ navigation }) => {
             </View>
             <View style={s.ruleRow}>
               <View style={[s.ruleDot, { backgroundColor: COLORS.levelAdvanced }]} />
-              <Text style={s.ruleText}>Acquis : 10 bonnes réponses consécutives</Text>
+              <Text style={s.ruleText}>Acquis : 5 bonnes réponses consécutives</Text>
             </View>
           </View>
           <TouchableOpacity style={s.ctaBtn} onPress={startQuiz} activeOpacity={0.85}>
@@ -182,7 +184,7 @@ const QuizScreen = ({ navigation }) => {
   return (
     <KeyboardAvoidingView style={s.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
-      <View style={s.header}>
+      <View style={[s.header, { paddingTop: insets.top + 10 }]}>
         <Text style={s.headerTitle}>Quiz</Text>
         <Text style={s.counter}>{currentIndex + 1}/{questions.length}</Text>
       </View>
@@ -252,7 +254,7 @@ const QuizScreen = ({ navigation }) => {
 
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 50, paddingBottom: 12 },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 12 },
   headerTitle: { fontSize: 24, color: COLORS.textPrimary, ...FONTS.bold },
   counter: { fontSize: 14, color: COLORS.textSecondary, ...FONTS.semiBold },
   progressBar: { height: 4, backgroundColor: COLORS.border, marginHorizontal: 20, borderRadius: 2 },

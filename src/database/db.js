@@ -39,7 +39,7 @@ export const getDatabase = async () => {
 };
 
 export const getLevel = (streak) => {
-  if (streak >= 10) return 2;
+  if (streak >= 5) return 2;
   if (streak >= 3) return 1;
   return 0;
 };
@@ -173,7 +173,7 @@ export const getWordsForQuiz = async (limit = 10) => {
     const allWords = getWebDb();
     if (allWords.length === 0) return [];
     const weighted = allWords.map(w => {
-      let weight = w.streak === 0 ? 10 : (w.streak < 3 ? 8 : (w.streak < 10 ? 4 : 1));
+      let weight = w.streak === 0 ? 10 : (w.streak < 3 ? 8 : (w.streak < 5 ? 4 : 1));
       return { ...w, weight, level: getLevel(w.streak) };
     });
     const selected = [];
@@ -202,7 +202,7 @@ export const getWordsForQuiz = async (limit = 10) => {
 const getWordsForQuizWeb = (allWords, limit) => {
     if (allWords.length === 0) return [];
     const weighted = allWords.map(w => {
-      let weight = w.streak === 0 ? 10 : (w.streak < 3 ? 8 : (w.streak < 10 ? 4 : 1));
+      let weight = w.streak === 0 ? 10 : (w.streak < 3 ? 8 : (w.streak < 5 ? 4 : 1));
       return { ...w, weight, level: getLevel(w.streak) };
     });
     const selected = [];

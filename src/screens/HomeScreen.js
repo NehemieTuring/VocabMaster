@@ -4,10 +4,12 @@ import {
   TextInput, Alert, Animated, StatusBar, RefreshControl, Platform,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 // expo-file-system & expo-sharing loaded dynamically on native only
 import { COLORS, SIZES, FONTS } from '../constants/theme';
 import { getAllWords, deleteWord, updateWord, searchWords, getWordsCount } from '../database/db';
+import { exportData } from '../utils/exportService';
 import WordCard from '../components/WordCard';
 import StatCard from '../components/StatCard';
 import AddWordModal from '../components/AddWordModal';
@@ -19,6 +21,7 @@ const SORT_OPTIONS = [
 ];
 
 const HomeScreen = ({ navigation }) => {
+  const insets = useSafeAreaInsets();
   const [words, setWords] = useState([]);
   const [counts, setCounts] = useState({ 0: 0, 1: 0, 2: 0 });
   const [modalVisible, setModalVisible] = useState(false);
@@ -77,6 +80,37 @@ const HomeScreen = ({ navigation }) => {
   };
 
   const handleEdit = (item) => { setEditingWord(item); setModalVisible(true); };
+
+  const handleExport = async () => {
+    try {
+      if (words.length === 0) {
+        Alert.alert('Export impossible', 'Aucun mot à exporter.');
+        return;
+      }
+
+      Alert.alert(
+        'Exporter le vocabulaire',
+        'Choisissez le format d\'exportation :',
+        [
+          { text: 'Format CSV (Excel)', onPress: () => performExport(words, 'csv') },
+          { text: 'Format JSON', onPress: () => performExport(words, 'json') },
+          { text: 'Format Texte', onPress: () => performExport(words, 'txt') },
+          { text: 'Annuler', style: 'cancel' },
+        ]
+      );
+    } catch (err) {
+      Alert.alert('Erreur', "Impossible de préparer l'exportation.");
+    }
+  };
+
+  const performExport = async (data, format) => {
+    try {
+      await exportData(data, format);
+    } catch (err) {
+      Alert.alert('Erreur', "L'exportation a échoué.");
+    }
+  };
+
   const totalWords = counts[0] + counts[1] + counts[2];
   const searchHeight = searchAnim.interpolate({
     inputRange: [0, 1], outputRange: [0, 56],
@@ -135,12 +169,17 @@ const HomeScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
-      <View style={styles.topBar}>
+      <View style={[styles.topBar, { paddingTop: insets.top + 10 }]}>
         <Text style={styles.appTitle}>Vocabulaire</Text>
-        <TouchableOpacity onPress={toggleSearch} style={styles.searchToggle}>
-          <MaterialIcons name={showSearch ? 'close' : 'search'}
-            size={24} color={COLORS.textPrimary} />
-        </TouchableOpacity>
+        <View style={styles.topBarActions}>
+          <TouchableOpacity onPress={handleExport} style={styles.topBarBtn}>
+            <MaterialIcons name="file-download" size={24} color={COLORS.primary} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={toggleSearch} style={styles.topBarBtn}>
+            <MaterialIcons name={showSearch ? 'close' : 'search'}
+              size={24} color={COLORS.textPrimary} />
+          </TouchableOpacity>
+        </View>
       </View>
       <Animated.View style={[styles.searchWrapper,
         { height: searchHeight, opacity: searchAnim }]}>
@@ -163,7 +202,7 @@ const HomeScreen = ({ navigation }) => {
         )}
         ListHeaderComponent={renderHeader}
         ListEmptyComponent={renderEmpty}
-        contentContainerStyle={words.length === 0 ? styles.emptyList : styles.list}
+        contentContainerStyle={words.length === 0 ? styles.emptyList : { paddingBottom: 20 }}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl refreshing={refreshing}
@@ -181,11 +220,12 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
   topBar: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 20, paddingTop: 50, paddingBottom: 12,
+    paddingHorizontal: 20, paddingBottom: 12,
     backgroundColor: COLORS.background,
   },
   appTitle: { fontSize: 24, color: COLORS.textPrimary, ...FONTS.bold },
-  searchToggle: { padding: 8, borderRadius: 999 },
+  topBarActions: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  topBarBtn: { padding: 8, borderRadius: 999 },
   searchWrapper: { paddingHorizontal: 16, overflow: 'hidden' },
   searchBar: {
     flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.surface,
