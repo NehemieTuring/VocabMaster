@@ -94,8 +94,8 @@ const AddWordScreen = ({ navigation }) => {
     try {
       await exportData(words, format);
     } catch (err) {
-      console.error(err);
-      Alert.alert('Erreur', "L'exportation a échoué. " + (err.message || ""));
+      // Error is already handled in exportService
+      console.error('Export failed:', err);
     }
   };
 
@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
   exportBtn: { padding: 4 },
   badge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 4, backgroundColor: COLORS.surface, borderRadius: 999, ...SIZES.shadowSm },
   badgeText: { fontSize: 12, color: COLORS.primary, ...FONTS.semiBold },
-  scrollContent: { paddingHorizontal: 20, paddingBottom: 40 },
+  scrollContent: { paddingHorizontal: 20, paddingBottom: 50 },
   formCard: { backgroundColor: COLORS.surface, borderRadius: 20, padding: 24, ...SIZES.shadowMd },
   illustration: { alignItems: 'center', marginBottom: 24 },
   illustrationCircle: { width: 72, height: 72, borderRadius: 36, backgroundColor: COLORS.background, alignItems: 'center', justifyContent: 'center', marginBottom: 12 },

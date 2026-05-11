@@ -259,7 +259,7 @@ const s = StyleSheet.create({
   counter: { fontSize: 14, color: COLORS.textSecondary, ...FONTS.semiBold },
   progressBar: { height: 4, backgroundColor: COLORS.border, marginHorizontal: 20, borderRadius: 2 },
   progressFill: { height: '100%', backgroundColor: COLORS.primary, borderRadius: 2 },
-  quizScroll: { paddingBottom: 40 },
+  quizScroll: { paddingBottom: 50 },
   // Question
   questionCard: { margin: 20, padding: 24, backgroundColor: COLORS.surface, borderRadius: 20, alignItems: 'center', ...SIZES.shadowMd },
   dirBadge: { paddingHorizontal: 14, paddingVertical: 5, backgroundColor: COLORS.primary, borderRadius: 999, marginBottom: 12 },

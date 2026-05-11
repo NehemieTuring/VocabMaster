@@ -107,7 +107,8 @@ const HomeScreen = ({ navigation }) => {
     try {
       await exportData(data, format);
     } catch (err) {
-      Alert.alert('Erreur', "L'exportation a échoué.");
+      // Error is already handled in exportService
+      console.error('Export failed:', err);
     }
   };
 
@@ -202,7 +203,7 @@ const HomeScreen = ({ navigation }) => {
         )}
         ListHeaderComponent={renderHeader}
         ListEmptyComponent={renderEmpty}
-        contentContainerStyle={words.length === 0 ? styles.emptyList : { paddingBottom: 20 }}
+        contentContainerStyle={words.length === 0 ? styles.emptyList : { paddingBottom: 30 }}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl refreshing={refreshing}
