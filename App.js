@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -8,6 +8,8 @@ import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-cont
 import HomeScreen from './src/screens/HomeScreen';
 import AddWordScreen from './src/screens/AddWordScreen';
 import QuizScreen from './src/screens/QuizScreen';
+import AIExerciseScreen from './src/screens/AIExerciseScreen';
+import { loadFullDictionary } from './src/ai/dictionary';
 
 const Tab = createBottomTabNavigator();
 
@@ -17,6 +19,7 @@ const COLORS = {
   surface: '#FFFFFF',
   background: '#F5F7FA',
   accent: '#FF6D00',
+  aiPurple: '#7C3AED',
 };
 
 function TabNavigator() {
@@ -31,9 +34,11 @@ function TabNavigator() {
           if (route.name === 'Vocabulaire') iconName = 'menu-book';
           else if (route.name === 'Ajouter') iconName = 'add-circle';
           else if (route.name === 'Quiz') iconName = 'school';
+          else if (route.name === 'IA') iconName = 'auto-awesome';
+          const isAI = route.name === 'IA';
           return (
-            <View style={focused ? styles.activeIconWrap : null}>
-              <MaterialIcons name={iconName} size={focused ? 26 : 24} color={color} />
+            <View style={focused ? [styles.activeIconWrap, isAI && styles.activeIconWrapAI] : null}>
+              <MaterialIcons name={iconName} size={focused ? 26 : 24} color={isAI && focused ? COLORS.aiPurple : color} />
             </View>
           );
         },
@@ -65,11 +70,20 @@ function TabNavigator() {
         component={QuizScreen}
         options={{ tabBarLabel: "S'exercer" }}
       />
+      <Tab.Screen
+        name="IA"
+        component={AIExerciseScreen}
+        options={{ tabBarLabel: 'IA', tabBarActiveTintColor: COLORS.aiPurple }}
+      />
     </Tab.Navigator>
   );
 }
 
 export default function App() {
+  useEffect(() => {
+    loadFullDictionary();
+  }, []);
+
   return (
     <SafeAreaProvider>
       <NavigationContainer>
@@ -103,5 +117,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 4,
+  },
+  activeIconWrapAI: {
+    backgroundColor: 'rgba(124, 58, 237, 0.1)',
   },
 });

@@ -9,6 +9,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { COLORS, SIZES, FONTS } from '../constants/theme';
 import { addWord, getTotalWordsCount, getAllWords } from '../database/db';
 import { exportData } from '../utils/exportService';
+import { autoTranslate } from '../ai/translationService';
 
 const AddWordScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
@@ -17,9 +18,11 @@ const AddWordScreen = ({ navigation }) => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [totalWords, setTotalWords] = useState(0);
+  const [aiSuggestion, setAiSuggestion] = useState(null);
   const translationRef = useRef(null);
   const successAnim = useRef(new Animated.Value(0)).current;
   const formAnim = useRef(new Animated.Value(0)).current;
+  const debounceRef = useRef(null);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -144,7 +147,14 @@ const AddWordScreen = ({ navigation }) => {
                 <TextInput
                   style={styles.input}
                   value={word}
-                  onChangeText={(t) => { setWord(t); setError(''); }}
+                  onChangeText={(t) => {
+                    setWord(t); setError('');
+                    if (debounceRef.current) clearTimeout(debounceRef.current);
+                    debounceRef.current = setTimeout(() => {
+                      const result = autoTranslate(t);
+                      setAiSuggestion(result);
+                    }, 400);
+                  }}
                   placeholder="Ex: Hello, Computer, Book..."
                   placeholderTextColor={COLORS.textLight}
                   returnKeyType="next"
@@ -157,6 +167,19 @@ const AddWordScreen = ({ navigation }) => {
                 )}
               </View>
             </View>
+            {aiSuggestion && !translation && (
+              <TouchableOpacity
+                style={styles.suggestionChip}
+                onPress={() => { setTranslation(aiSuggestion.translation); setAiSuggestion(null); }}
+                activeOpacity={0.7}
+              >
+                <MaterialIcons name="auto-awesome" size={14} color="#7C3AED" />
+                <Text style={styles.suggestionText}>
+                  Suggestion IA : <Text style={styles.suggestionBold}>{aiSuggestion.translation}</Text>
+                </Text>
+                <MaterialIcons name="add" size={16} color="#7C3AED" />
+              </TouchableOpacity>
+            )}
 
             {/* Arrow */}
             <View style={styles.arrowContainer}>
@@ -260,6 +283,9 @@ const styles = StyleSheet.create({
   saveBtnText: { fontSize: 16, color: COLORS.white, ...FONTS.bold },
   successToast: { position: 'absolute', bottom: 100, left: 20, right: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 14, backgroundColor: COLORS.success, borderRadius: 12, ...SIZES.shadowLg },
   successText: { fontSize: 14, color: COLORS.white, ...FONTS.semiBold },
+  suggestionChip: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 8, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: 'rgba(124,58,237,0.08)', borderRadius: 10, borderWidth: 1, borderColor: 'rgba(124,58,237,0.2)' },
+  suggestionText: { flex: 1, fontSize: 13, color: '#7C3AED', ...FONTS.medium },
+  suggestionBold: { ...FONTS.bold },
 });
 
 export default AddWordScreen;
