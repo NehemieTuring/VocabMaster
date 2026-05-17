@@ -21,6 +21,7 @@ const LevelBars = ({ level, streak }) => {
 const WordCard = ({ item, onPress, onDelete, onEdit }) => {
   const level = item.level !== undefined ? item.level : getLevel(item.streak || 0);
   const config = LEVEL_CONFIG[level] || LEVEL_CONFIG[0];
+  const hasTranslation = item.translation && item.translation.trim() !== '';
 
   return (
     <TouchableOpacity
@@ -29,18 +30,35 @@ const WordCard = ({ item, onPress, onDelete, onEdit }) => {
       activeOpacity={0.7}
     >
       {/* Left color accent */}
-      <View style={[styles.levelAccent, { backgroundColor: config.color }]} />
+      <View style={[styles.levelAccent, { backgroundColor: hasTranslation ? config.color : '#F59E0B' }]} />
 
       <View style={styles.content}>
         {/* Word info */}
         <View style={styles.wordSection}>
           <Text style={styles.word} numberOfLines={1}>{item.word}</Text>
-          <Text style={styles.translation} numberOfLines={1}>{item.translation}</Text>
+          {hasTranslation ? (
+            <Text style={styles.translation} numberOfLines={1}>{item.translation}</Text>
+          ) : (
+            <TouchableOpacity 
+              style={styles.pendingRow}
+              onPress={() => onEdit(item)}
+              activeOpacity={0.7}
+            >
+              <MaterialIcons name="edit" size={12} color="#F59E0B" />
+              <Text style={styles.pendingText}>Ajouter la traduction</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Level indicator + Actions */}
         <View style={styles.rightSection}>
-          <LevelBars level={level} streak={item.streak || 0} />
+          {hasTranslation ? (
+            <LevelBars level={level} streak={item.streak || 0} />
+          ) : (
+            <View style={styles.pendingBadge}>
+              <MaterialIcons name="pending" size={16} color="#F59E0B" />
+            </View>
+          )}
           <View style={styles.actions}>
             <TouchableOpacity
               onPress={() => onEdit(item)}
@@ -97,6 +115,26 @@ const styles = StyleSheet.create({
     fontSize: SIZES.base,
     color: COLORS.textSecondary,
     ...FONTS.regular,
+  },
+  pendingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 2,
+  },
+  pendingText: {
+    fontSize: 12,
+    color: '#F59E0B',
+    ...FONTS.medium,
+    fontStyle: 'italic',
+  },
+  pendingBadge: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#FFFBEB',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   rightSection: {
     alignItems: 'center',

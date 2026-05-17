@@ -7,7 +7,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { COLORS, SIZES, FONTS, LEVEL_CONFIG } from '../constants/theme';
-import { getWordsForQuiz, incrementStreak, resetStreak, getTotalWordsCount, getLevel } from '../database/db';
+import { getWordsForQuiz, incrementStreak, resetStreak, getLevel } from '../database/db';
 
 const normalize = (str) => str.trim().toLowerCase().replace(/\s+/g, ' ');
 
@@ -29,10 +29,10 @@ const QuizScreen = ({ navigation }) => {
   const inputRef = useRef(null);
 
   const loadQuiz = useCallback(async () => {
-    const count = await getTotalWordsCount();
-    if (count < 4) { setNotEnough(true); setQuizStarted(false); return; }
-    setNotEnough(false);
     const words = await getWordsForQuiz(10);
+    if (words.length < 4) { setNotEnough(true); setQuizStarted(false); return; }
+    setNotEnough(false);
+
     setQuestions(words);
     // Random direction for each question
     setDirections(words.map(() => Math.random() > 0.5));
@@ -96,7 +96,7 @@ const QuizScreen = ({ navigation }) => {
             <MaterialIcons name="school" size={56} color={COLORS.border} />
           </View>
           <Text style={s.emptyTitle}>Pas assez de mots</Text>
-          <Text style={s.emptyDesc}>Ajoute au moins 4 mots pour{'\n'}commencer un quiz !</Text>
+          <Text style={s.emptyDesc}>Ajoute au moins 4 mots avec traduction{'\n'}pour commencer un quiz !</Text>
           <TouchableOpacity style={s.ctaBtn} onPress={() => navigation.navigate('Ajouter')}>
             <MaterialIcons name="add-circle" size={20} color={COLORS.white} />
             <Text style={s.ctaBtnText}>Ajouter des mots</Text>

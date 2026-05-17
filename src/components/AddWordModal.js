@@ -46,10 +46,6 @@ const AddWordModal = ({ visible, onClose, onSave, editingWord }) => {
       setError('Veuillez entrer un mot');
       return;
     }
-    if (!translation.trim()) {
-      setError('Veuillez entrer la traduction');
-      return;
-    }
     setError('');
     onSave(word.trim(), translation.trim());
     setWord('');
@@ -100,7 +96,7 @@ const AddWordModal = ({ visible, onClose, onSave, editingWord }) => {
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Traduction</Text>
+              <Text style={styles.label}>Traduction (optionnelle)</Text>
               <View style={styles.inputWrapper}>
                 <MaterialIcons name="swap-horiz" size={20} color={COLORS.accent} style={styles.inputIcon} />
                 <TextInput
